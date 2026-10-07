@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT Help Desk Ticketing System</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #3b9eb2;
+            --danger: #ef4444;
+            --badge-critical-bg: #fee2e2;
+            --badge-critical-text: #991b1b;
+            --badge-medium-bg: #fef3c7;
+            --badge-medium-text: #92400e;
+            --badge-low-bg: #e0f2fe;
+            --badge-low-text: #00a6ff;
+            --badge-high-bg: #ffedd5;
+            --badge-high-text: #9a3412;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 40px 20px;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Title */
+        h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-top: 0;
+            margin-bottom: 24px;
+            color: var(--text-main);
+            letter-spacing: -0.02em;
+        }
+
+        /* Nav Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            border: none;
+            background: #e2e8f0;
+            color: white;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            background: #0079fa;
+            color: rgb(255, 255, 255);
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Dashboard View */
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 20px;
+            letter-spacing: -0.01em;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+        }
+
+        @media (max-width: 992px) {
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 24px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+            border-left: 5px solid var(--primary);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 140px;
+        }
+
+        .stat-card.alert {
+            border-left-color: var(--danger);
+        }
+
+        .stat-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-main);
+            line-height: 1.3;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1;
+            margin-top: 15px;
+        }
+
+        /* Card Container */
+        .card {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+            margin-bottom: 20px;
+        }
+
+        /* Filters Grid */
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 1100px) {
+            .filters-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .field-group label {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text-main);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            outline: none;
+            background-color: #fff;
+            color: var(--text-main);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary);
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th {
+            text-align: left;
+            padding: 14px 16px;
+            background: #f1f5f9;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.95rem;
+            color: var(--text-main);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .badge.Critical { background: var(--badge-critical-bg); color: var(--badge-critical-text); }
+        .badge.Medium { background: var(--badge-medium-bg); color: var(--badge-medium-text); }
+        .badge.Low { background: var(--badge-low-bg); color: var(--badge-low-text); }
+        .badge.High { background: var(--badge-high-bg); color: var(--badge-high-text); }
+
+        .btn-action {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .btn-action:hover { opacity: 0.9; }
+
+        /* Form Inputs */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .btn-submit {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+            font-weight: 600;
+        }
+
+        .note-item {
+            border-left: 3px solid var(--primary);
+            padding: 12px;
+            margin-bottom: 12px;
+            background: #f8fafc;
+            border-radius: 0 6px 6px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Ticketing System</h1>
+
+    <!-- Tab Navigation Buttons -->
+    <div class="nav-tabs">
+        <button class="tab-btn active" id="btn-dash" onclick="switchTab('dashboard')">Dashboard</button>
+        <button class="tab-btn" id="btn-list" onclick="switchTab('tickets')">Tickets List</button>
+        <button class="tab-btn" id="btn-create" onclick="switchTab('create')">Create Ticket</button>
+    </div>
+
+    <!-- Error Banner -->
+    <div id="error-banner" class="error-message"></div>
+
+    <!-- 1. DASHBOARD OVERVIEW -->
+    <div id="dashboard" class="tab-content active">
+        <h2 class="section-title">Dashboard Overview</h2>
+        <div class="dashboard-grid">
+            <div class="stat-card alert">
+                <div class="stat-title">Unassigned Open Tickets</div>
+                <div class="stat-number" id="dash-unassigned">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Open Tickets</div>
+                <div class="stat-number" id="dash-open">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">In Progress Tickets</div>
+                <div class="stat-number" id="dash-inprogress">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Resolved Tickets</div>
+                <div class="stat-number" id="dash-resolved">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Closed Tickets</div>
+                <div class="stat-number" id="dash-closed">0</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. CREATE TICKET VIEW -->
+    <div id="create" class="tab-content">
+        <div class="card">
+            <h2 class="section-title">Send a Ticket</h2>
+            <form id="create-ticket-form">
+                <div class="form-group">
+                    <label>Requester Name:</label>
+                    <input type="text" id="req-name" required placeholder="e.g., Jane Doe">
+                </div>
+                <div class="form-group">
+                    <label>Category:</label>
+                    <select id="req-category" required>
+                        <option value="Hardware">Hardware</option>
+                        <option value="Network">Network</option>
+                        <option value="Software">Software</option>
+                        <option value="Account">Account</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Priority:</label>
+                    <select id="req-priority" required>
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                        <option value="Critical">Critical</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Description:</label>
+                    <textarea id="req-desc" rows="4" required placeholder="Describe the issue..."></textarea>
+                </div>
+                <button type="submit" class="btn-submit">Submit Ticket</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. TICKETS LIST VIEW -->
+    <div id="tickets" class="tab-content">
+        <div class="card">
+            <h2 class="section-title">Tickets & Search</h2>
+            <div class="filters-grid">
+                <div class="field-group">
+                    <label>Search Keyword:</label>
+                    <input type="text" id="filter-search" placeholder="Search description..." oninput="renderTickets()">
+                </div>
+                <div class="field-group">
+                    <label>Status:</label>
+                    <select id="filter-status" onchange="renderTickets()">
+                        <option value="">All Statuses</option>
+                        <option value="Open">Open</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Resolved">Resolved</option>
+                        <option value="Closed">Closed</option>
+                    </select>
+                </div>
+                <div class="field-group">
+                    <label>Priority:</label>
+                    <select id="filter-priority" onchange="renderTickets()">
+                        <option value="">All Priorities</option>
+                        <option value="Critical">Critical</option>
+                        <option value="High">High</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Low">Low</option>
+                    </select>
+                </div>
+                <div class="field-group">
+                    <label>Category:</label>
+                    <select id="filter-category" onchange="renderTickets()">
+                        <option value="">All Categories</option>
+                        <option value="Hardware">Hardware</option>
+                        <option value="Network">Network</option>
+                        <option value="Software">Software</option>
+                        <option value="Account">Account</option>
+                    </select>
+                </div>
+                <div class="field-group">
+                    <label>Technician:</label>
+                    <select id="filter-technician" onchange="renderTickets()">
+                        <option value="">All Technicians</option>
+                        <option value="Unassigned">Unassigned</option>
+                        <option value="Tech Alex">Tech Alex</option>
+                        <option value="Tech Sam">Tech Sam</option>
+                        <option value="Tech Jordan">Tech Jordan</option>
+                    </select>
+                </div>
+                <div class="field-group">
+                    <label>Sort By:</label>
+                    <select id="filter-sort" onchange="renderTickets()">
+                        <option value="priority">Priority (Critical First)</option>
+                        <option value="date-desc">Newest First</option>
+                        <option value="date-asc">Oldest First</option>
+                    </select>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Ticket ID</th>
+                        <th>Requester</th>
+                        <th>Category</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Technician</th>
+                        <th>Created</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="ticket-table-body">
+                    <!-- Loaded dynamically via JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 4. TICKET DETAIL VIEW -->
+    <div id="detail" class="tab-content">
+        <button class="btn-action" onclick="switchTab('tickets')" style="margin-bottom: 20px;">← Back to List</button>
+        
+        <div class="card">
+            <h2 id="detail-id" class="section-title">Ticket Details</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <p><strong>Requester:</strong> <span id="detail-requester"></span></p>
+                <p><strong>Category:</strong> <span id="detail-category"></span></p>
+                <p><strong>Priority:</strong> <span id="detail-priority"></span></p>
+                <p><strong>Date Created:</strong> <span id="detail-created"></span></p>
+                <p><strong>Date Resolved:</strong> <span id="detail-resolved">None</span></p>
+                <p><strong>Resolution Time:</strong> <span id="detail-duration">N/A</span></p>
+            </div>
+            <p><strong>Description:</strong></p>
+            <div id="detail-desc" style="background:#f1f5f9; padding: 12px; border-radius: 6px;"></div>
+
+            <hr style="margin: 25px 0; border: 0; border-top: 1px solid var(--border-color);">
+
+            <h3 style="margin-top:0;">Management Actions</h3>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <div class="field-group">
+                    <label>Assign Technician:</label>
+                    <select id="detail-assignee" onchange="assignTechnician()">
+                        <option value="">Unassigned</option>
+                        <option value="Tech Alex">Tech Alex</option>
+                        <option value="Tech Sam">Tech Sam</option>
+                        <option value="Tech Jordan">Tech Jordan</option>
+                    </select>
+                </div>
+                <div class="field-group">
+                    <label>Update Status:</label>
+                    <select id="detail-status" onchange="updateStatus()">
+                        <option value="Open">Open</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Resolved">Resolved</option>
+                        <option value="Closed">Closed</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-top:0;">Notes</h3>
+            <form id="add-note-form" style="margin-bottom: 20px;">
+                <div class="form-group">
+                    <input type="text" id="note-author" placeholder="Your Name (e.g., Tech Alex)" required>
+                </div>
+                <div class="form-group">
+                    <textarea id="note-text" rows="2" placeholder="Add a note..." required></textarea>
+                </div>
+                <button type="submit" class="btn-action">Add Note</button>
+            </form>
+
+            <div id="notes-container"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const DEFAULT_TICKETS = [
+        {
+            id: "TKT-0001",
+            requester: "John Smith",
+            category: "Hardware",
+            priority: "Critical",
+            description: "Main server PC will not turn on.",
+            status: "In Progress",
+            technician: "Tech Alex",
+            dateCreated: new Date("2026-10-05").toISOString(),
+            dateResolved: null,
+            notes: []
+        },
+        {
+            id: "TKT-0002",
+            requester: "Sarah Jenkins",
+            category: "Network",
+            priority: "Medium",
+            description: "Wi-Fi is disconnecting frequently in room 204.",
+            status: "Open",
+            technician: "",
+            dateCreated: new Date("2026-10-07").toISOString(),
+            dateResolved: null,
+            notes: []
+        }
+    ];
+
+    // Load saved tickets or set default seed data
+    function loadTickets() {
+        const savedData = localStorage.getItem('helpdesk_tickets');
+        if (savedData) {
+            return JSON.parse(savedData);
+        } else {
+            localStorage.setItem('helpdesk_tickets', JSON.stringify(DEFAULT_TICKETS));
+            return DEFAULT_TICKETS;
+        }
+    }
+
+    // Save tickets to LocalStorage
+    function saveTickets() {
+        localStorage.setItem('helpdesk_tickets', JSON.stringify(tickets));
+    }
+
+    let tickets = loadTickets();
+    
+    // Auto-calculate counter based on highest ID stored
+    let maxIdNumber = tickets.reduce((max, t) => {
+        let num = parseInt(t.id.replace('TKT-', ''), 10) || 0;
+        return num > max ? num : max;
+    }, 0);
+    let ticketCounter = maxIdNumber + 1;
+
+    let activeTicketId = null;
+    const prioritiesOrder = { "Critical": 1, "High": 2, "Medium": 3, "Low": 4 };
+    const validTransitions = {
+        "Open": ["In Progress"],
+        "In Progress": ["Resolved"],
+        "Resolved": ["In Progress", "Closed"],
+        "Closed": []
+    };
+
+    function showError(msg) {
+        const errorBanner = document.getElementById('error-banner');
+        errorBanner.innerText = msg;
+        errorBanner.style.display = 'block';
+        setTimeout(() => { errorBanner.style.display = 'none'; }, 4000);
+    }
+
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+        document.getElementById(tabName).classList.add('active');
+
+        if(tabName === 'dashboard') {
+            document.getElementById('btn-dash').classList.add('active');
+            updateDashboard();
+        } else if(tabName === 'tickets') {
+            document.getElementById('btn-list').classList.add('active');
+            renderTickets();
+        } else if(tabName === 'create') {
+            document.getElementById('btn-create').classList.add('active');
+        }
+    }
+
+    document.getElementById('create-ticket-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formattedId = "TKT-" + String(ticketCounter++).padStart(4, '0');
+        const newTicket = {
+            id: formattedId,
+            requester: document.getElementById('req-name').value,
+            category: document.getElementById('req-category').value,
+            priority: document.getElementById('req-priority').value,
+            description: document.getElementById('req-desc').value,
+            status: "Open",
+            technician: "",
+            dateCreated: new Date().toISOString(),
+            dateResolved: null,
+            notes: []
+        };
+        tickets.push(newTicket);
+        saveTickets(); // PERMANENT SAVE TO LOCALSTORAGE
+        this.reset();
+        switchTab('tickets');
+    });
+
+    function updateDashboard() {
+        document.getElementById('dash-unassigned').innerText = 
+            tickets.filter(t => t.status === 'Open' && !t.technician).length;
+        document.getElementById('dash-open').innerText = 
+            tickets.filter(t => t.status === 'Open').length;
+        document.getElementById('dash-inprogress').innerText = 
+            tickets.filter(t => t.status === 'In Progress').length;
+        document.getElementById('dash-resolved').innerText = 
+            tickets.filter(t => t.status === 'Resolved').length;
+        document.getElementById('dash-closed').innerText = 
+            tickets.filter(t => t.status === 'Closed').length;
+    }
+
+    function renderTickets() {
+        const search = document.getElementById('filter-search').value.toLowerCase();
+        const status = document.getElementById('filter-status').value;
+        const priority = document.getElementById('filter-priority').value;
+        const category = document.getElementById('filter-category').value;
+        const tech = document.getElementById('filter-technician').value;
+        const sort = document.getElementById('filter-sort').value;
+
+        let filtered = tickets.filter(t => {
+            const matchesSearch = t.description.toLowerCase().includes(search) || t.id.toLowerCase().includes(search);
+            const matchesStatus = !status || t.status === status;
+            const matchesPriority = !priority || t.priority === priority;
+            const matchesCategory = !category || t.category === category;
+            const matchesTech = !tech || (tech === 'Unassigned' ? !t.technician : t.technician === tech);
+
+            return matchesSearch && matchesStatus && matchesPriority && matchesCategory && matchesTech;
+        });
+
+        filtered.sort((a, b) => {
+            if (sort === 'priority') {
+                return prioritiesOrder[a.priority] - prioritiesOrder[b.priority];
+            } else if (sort === 'date-desc') {
+                return new Date(b.dateCreated) - new Date(a.dateCreated);
+            } else if (sort === 'date-asc') {
+                return new Date(a.dateCreated) - new Date(b.dateCreated);
+            }
+        });
+
+        const tbody = document.getElementById('ticket-table-body');
+        tbody.innerHTML = '';
+
+        filtered.forEach(t => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${t.id}</strong></td>
+                <td>${t.requester}</td>
+                <td>${t.category}</td>
+                <td><span class="badge ${t.priority}">${t.priority}</span></td>
+                <td>${t.status}</td>
+                <td>${t.technician || 'Unassigned'}</td>
+                <td>${new Date(t.dateCreated).toLocaleDateString()}</td>
+                <td><button class="btn-action" onclick="openDetail('${t.id}')">View</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function openDetail(id) {
+        activeTicketId = id;
+        const t = tickets.find(x => x.id === id);
+
+        document.getElementById('detail-id').innerText = `${t.id} Details`;
+        document.getElementById('detail-requester').innerText = t.requester;
+        document.getElementById('detail-category').innerText = t.category;
+        document.getElementById('detail-priority').innerText = t.priority;
+        document.getElementById('detail-created').innerText = new Date(t.dateCreated).toLocaleString();
+        document.getElementById('detail-desc').innerText = t.description;
+
+        document.getElementById('detail-assignee').value = t.technician;
+        document.getElementById('detail-status').value = t.status;
+
+        if (t.dateResolved) {
+            document.getElementById('detail-resolved').innerText = new Date(t.dateResolved).toLocaleString();
+            const diffDays = Math.ceil(Math.abs(new Date(t.dateResolved) - new Date(t.dateCreated)) / (1000 * 60 * 60 * 24));
+            document.getElementById('detail-duration').innerText = `${diffDays} day(s)`;
+        } else {
+            document.getElementById('detail-resolved').innerText = 'None';
+            document.getElementById('detail-duration').innerText = 'N/A';
+        }
+
+        renderNotes();
+        switchTab('detail');
+    }
+
+    function assignTechnician() {
+        const t = tickets.find(x => x.id === activeTicketId);
+        t.technician = document.getElementById('detail-assignee').value;
+        saveTickets(); // Save assignment update
+    }
+
+    function updateStatus() {
+        const t = tickets.find(x => x.id === activeTicketId);
+        const targetStatus = document.getElementById('detail-status').value;
+
+        if (targetStatus === 'In Progress' && !t.technician) {
+            showError("A ticket can become 'In Progress' only if it has an assigned technician.");
+            document.getElementById('detail-status').value = t.status;
+            return;
+        }
+
+        const allowed = validTransitions[t.status];
+        if (t.status !== targetStatus && !allowed.includes(targetStatus)) {
+            showError(`Invalid status change! Cannot go from '${t.status}' to '${targetStatus}'.`);
+            document.getElementById('detail-status').value = t.status;
+            return;
+        }
+
+        t.status = targetStatus;
+        if (targetStatus === 'Resolved' && !t.dateResolved) {
+            t.dateResolved = new Date().toISOString();
+        }
+
+        saveTickets(); // Save status update
+        openDetail(t.id);
+    }
+
+    document.getElementById('add-note-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const t = tickets.find(x => x.id === activeTicketId);
+        const newNote = {
+            author: document.getElementById('note-author').value,
+            text: document.getElementById('note-text').value,
+            date: new Date().toISOString()
+        };
+        t.notes.unshift(newNote);
+        saveTickets(); // Save new note
+        document.getElementById('note-text').value = '';
+        renderNotes();
+    });
+
+    function renderNotes() {
+        const t = tickets.find(x => x.id === activeTicketId);
+        const container = document.getElementById('notes-container');
+        container.innerHTML = '';
+
+        if (t.notes.length === 0) {
+            container.innerHTML = '<p><em>No notes added yet.</em></p>';
+            return;
+        }
+
+        t.notes.forEach(n => {
+            const div = document.createElement('div');
+            div.className = 'note-item';
+            div.innerHTML = `
+                <div style="font-size:0.85rem; color:#64748b;"><strong>${n.author}</strong> - ${new Date(n.date).toLocaleString()}</div>
+                <div style="margin-top:4px;">${n.text}</div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    updateDashboard();
+</script>
+</body>
+</html>
